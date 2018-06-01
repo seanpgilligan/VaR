@@ -1,0 +1,58 @@
+#--/ Library
+
+library(shiny)
+library(shinyBS)
+library(shinythemes)
+library(DT)
+library(tidyverse)
+library(parsedate)
+library(zoo)
+library(lubridate)
+library(ggvis)
+library(PerformanceAnalytics)
+library(openxlsx)
+
+options(shiny.maxRequestSize=30*1024^2)
+
+#--/ Settings
+
+colnames_def <- c('Period', 'Return')
+index_name=tibble(
+    ix_long=c('Normal VaR','Gaussian VaR','Modified VaR'),
+    ix_short=c('Normal','Gaussian','Modified')
+    )
+trail.seq=seq(12,12*50,12)
+
+
+#--/ File Upload
+
+observeEvent(input$var_file_in,{
+
+  inFile <- input$var_file_in
+
+  if(is.null(inFile)){
+
+  var_data$data_df <- NULL
+
+}else{
+  data_df<- read_csv(inFile$datapath,
+                       col_types = cols( .default = col_character() ),
+                       locale = locale(encoding = 'latin1')) 
+}                       
+                       
+#--/ Data Cleaning
+
+rownames(dat_df)as.Date(data_df$Period,format='%m,%d,%Y')
+  data_df$Period=NULL
+  
+ #--/ Download
+ output$var_download_b <- downloadHandler(
+ 
+ #--/ Data Calculations
+  
+  historical=VaR(data_df,p=0.95,method="historical")
+  
+  gaussian=VaR(data_df,p=0.95,method="gaussian")
+  
+  modified=VaR(data_df,p=0.95,method="modified")
+  
